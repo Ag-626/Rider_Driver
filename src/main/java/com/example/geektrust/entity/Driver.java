@@ -5,7 +5,7 @@ import java.util.Objects;
 public class Driver extends Locatable {
 
   private final String  driverId;
-  private boolean available = true;
+  private DriverStatus status = DriverStatus.AVAILABLE;
 
   public Driver(String driverId, Position position){
     super(position);
@@ -17,10 +17,17 @@ public class Driver extends Locatable {
   }
 
   public boolean isAvailable() {
-    return available;
+    return this.status == DriverStatus.AVAILABLE;
   }
 
-  public void markUnavailable(){
-    this.available = false;
+  public void assignRide(){
+    if(this.status!=DriverStatus.AVAILABLE)
+      throw new IllegalStateException("Driver not available");
+    this.status = DriverStatus.ON_RIDE;
   }
+  public void completeRide(Position dropPosition){
+    moveTo(dropPosition);
+    this.status = DriverStatus.AVAILABLE;
+  }
+
 }
