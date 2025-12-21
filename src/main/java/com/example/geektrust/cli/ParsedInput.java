@@ -16,6 +16,14 @@ public class ParsedInput {
     this.args = Collections.unmodifiableList(new ArrayList<>(args));
   }
 
+  public static ParsedInput noop(){
+    return new ParsedInput("NOOP", null, Collections.<String>emptyList());
+  }
+
+  public boolean isNoop(){
+    return "NOOP".equals(verb);
+  }
+
   public String getEntityId() {
     return entityId;
   }
