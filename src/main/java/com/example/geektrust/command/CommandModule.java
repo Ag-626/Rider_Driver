@@ -10,6 +10,7 @@ public final class CommandModule {
     CommandRegistry registry = new CommandRegistry();
 
     registry.register("ADD_DRIVER", new AddDriverCommandFactory(services.driverService()));
+    registry.register("ADD_RIDER", new AddRiderCommandFactory(services.riderService()));
     return registry;
   }
 
