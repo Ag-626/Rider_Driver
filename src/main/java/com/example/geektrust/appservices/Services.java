@@ -1,5 +1,8 @@
 package com.example.geektrust.appservices;
 
+import com.example.geektrust.repository.DriverRepository;
+import com.example.geektrust.repository.InMemoryDriverRepository;
+
 public final class Services {
 
   private final DriverService driverService;
@@ -13,10 +16,15 @@ public final class Services {
   }
 
   public static Services createDefault(){
-    DriverService driverService = new DriverService();
+    DriverRepository driverRepository = new InMemoryDriverRepository();
+    DriverService driverService = new DriverService(driverRepository);
     RiderService riderService = new RiderService();
     RideService rideService = new RideService();
     return new Services(driverService, riderService, rideService);
+  }
+
+  public DriverService driverService(){
+    return driverService;
   }
 
 }

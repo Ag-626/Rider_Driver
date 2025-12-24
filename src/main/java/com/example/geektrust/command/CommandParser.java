@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class CommandParser {
-  public ParsedInput parser (String line) {
+  public ParsedInput parse (String line) {
     String trimmed = (line == null) ? "" : line.trim();
     if (trimmed.isEmpty())
       return ParsedInput.noop();
