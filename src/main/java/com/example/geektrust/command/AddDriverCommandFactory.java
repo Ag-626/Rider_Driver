@@ -9,6 +9,7 @@ import java.util.Objects;
 
 public class AddDriverCommandFactory implements CommandFactory{
 
+  private static final int REQUIRED_ARG_COUNT = 2;
   private final DriverService driverService;
 
   public AddDriverCommandFactory(DriverService driverService){
@@ -24,7 +25,7 @@ public class AddDriverCommandFactory implements CommandFactory{
     if(driverId == null || driverId.isEmpty()){
       throw new IllegalArgumentException("ADD_Driver requires a driverId");
     }
-    if(parsedInput.getArgs().size()<2){
+    if(parsedInput.getArgs().size()<REQUIRED_ARG_COUNT){
       throw new IllegalArgumentException("ADD_Driver requires a x and y coordinates");
     }
 

@@ -9,6 +9,7 @@ import java.util.Objects;
 
 public class AddRiderCommandFactory implements CommandFactory{
 
+  private static final int REQUIRED_ARG_COUNT = 2;
   private final RiderService riderService;
 
   public AddRiderCommandFactory(RiderService riderService){
@@ -25,7 +26,7 @@ public class AddRiderCommandFactory implements CommandFactory{
     if(riderId == null || riderId.isEmpty()){
       throw new IllegalArgumentException("ADD_RIDER requires a riderId");
     }
-    if(args.size()<2){
+    if(args.size()<REQUIRED_ARG_COUNT){
       throw new IllegalArgumentException("ADD_Rider requires a x and y coordinates");
     }
 
