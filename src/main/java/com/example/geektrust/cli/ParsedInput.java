@@ -17,7 +17,7 @@ public class ParsedInput {
   }
 
   public static ParsedInput noop(){
-    return new ParsedInput("NOOP", null, Collections.<String>emptyList());
+    return new ParsedInput("NOOP", null, Collections.emptyList());
   }
 
   public boolean isNoop(){

@@ -6,12 +6,10 @@ public final class CommandModule {
 
   private CommandModule(){}
 
-  public static CommandRegistry buildRegistry(Services services){
-    CommandRegistry registry = new CommandRegistry();
-
-    registry.register("ADD_DRIVER", new AddDriverCommandFactory(services.driverService()));
-    registry.register("ADD_RIDER", new AddRiderCommandFactory(services.riderService()));
-    return registry;
+  public static CommandRegistry buildRegistry(Services services) {
+    return new CommandRegistry()
+        .register("ADD_DRIVER", new AddDriverCommandFactory(services.driverService()))
+        .register("ADD_RIDER", new AddRiderCommandFactory(services.riderService()));
   }
 
 

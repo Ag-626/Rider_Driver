@@ -3,7 +3,6 @@ package com.example.geektrust.command;
 import com.example.geektrust.cli.ParsedInput;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 

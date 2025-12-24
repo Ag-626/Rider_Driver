@@ -3,7 +3,6 @@ package com.example.geektrust.appservices;
 import com.example.geektrust.entity.Driver;
 import com.example.geektrust.repository.DriverRepository;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 
 public class DriverService {

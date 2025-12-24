@@ -2,7 +2,6 @@ package com.example.geektrust.command;
 
 import com.example.geektrust.cli.LineReader;
 import com.example.geektrust.cli.ParsedInput;
-import java.util.List;
 
 public final class CommandProcessor {
 
