@@ -33,8 +33,8 @@ public class Rider extends Locatable {
   }
 
   public void requestRide(){
-    if(status!=RiderStatus.IDLE)
-      throw new IllegalStateException("Rider must be IDLE to request a ride");
+    if(status==RiderStatus.ON_RIDE)
+      throw new IllegalStateException("Cannnot Request a ride While ON_RIDE");
     this.status = RiderStatus.LOOKING_FOR_RIDE;
   }
 

@@ -9,7 +9,8 @@ public final class CommandModule {
   public static CommandRegistry buildRegistry(Services services) {
     return new CommandRegistry()
         .register("ADD_DRIVER", new AddDriverCommandFactory(services.driverService()))
-        .register("ADD_RIDER", new AddRiderCommandFactory(services.riderService()));
+        .register("ADD_RIDER", new AddRiderCommandFactory(services.riderService()))
+        .register("MATCH", new MatchCommandFactory(services.matchService()));
   }
 
 
