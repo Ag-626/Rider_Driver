@@ -16,25 +16,11 @@ public class Rider extends Locatable {
     return this.riderId;
   }
 
-  public RiderStatus getStatus() {
-    return this.status;
-  }
 
-  public boolean isIdle(){
-    return this.status == RiderStatus.IDLE;
-  }
-
-  public boolean isOnRide(){
-    return this.status == RiderStatus.ON_RIDE;
-  }
-
-  public boolean isLookingForRide(){
-    return this.status == RiderStatus.LOOKING_FOR_RIDE;
-  }
 
   public void requestRide(){
     if(status==RiderStatus.ON_RIDE)
-      throw new IllegalStateException("Cannnot Request a ride While ON_RIDE");
+      throw new IllegalStateException("Cannot Request a ride While ON_RIDE");
     this.status = RiderStatus.LOOKING_FOR_RIDE;
   }
 
@@ -61,8 +47,5 @@ public class Rider extends Locatable {
     activeRideId = null;
   }
 
-  public String getActiveRideId(){
-    return this.activeRideId;
-  }
 
 }

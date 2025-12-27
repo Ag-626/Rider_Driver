@@ -40,7 +40,7 @@ public class RideService {
     String driverId = ids.get(n - 1);
 
     Driver driver = driverService.getDriver(driverId);
-    if (!driver.isAvailable()) return StartRideResult.INVALID_RIDE;
+    if (driver.isUnavailable()) return StartRideResult.INVALID_RIDE;
 
     Rider rider = riderService.getRider(riderId);
 

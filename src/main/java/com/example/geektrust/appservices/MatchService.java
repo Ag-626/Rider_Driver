@@ -38,7 +38,7 @@ public class MatchService {
     rider.requestRide();
 
     Position riderPos = rider.getPosition();
-    List<Driver> eligibleDrivers = findEligibleDrivers(riderPos, DEFAULT_MAX_DISTANCE);
+    List<Driver> eligibleDrivers = findEligibleDrivers(riderPos);
 
 
     List<String> eligibleDriverIds = new ArrayList<>();
@@ -64,14 +64,14 @@ public class MatchService {
     matchRepository.clear(riderId);
   }
 
-  private List<Driver> findEligibleDrivers(Position riderPosition, double maxDistance) {
+  private List<Driver> findEligibleDrivers(Position riderPosition) {
     List<Driver> eligibleDrivers = new ArrayList<>();
 
     for (Driver d : driverService.getAllDrivers()) {
-      if (!d.isAvailable()) continue;
+      if (d.isUnavailable()) continue;
 
       double dist = d.getPosition().distanceTo(riderPosition);
-      if (dist <= maxDistance) eligibleDrivers.add(d);
+      if (dist <= DEFAULT_MAX_DISTANCE) eligibleDrivers.add(d);
     }
 
     eligibleDrivers.sort(

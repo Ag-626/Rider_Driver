@@ -1,7 +1,6 @@
 package com.example.geektrust.command;
 
 import com.example.geektrust.appservices.RideService;
-import com.example.geektrust.appservices.StartRideResult;
 import com.example.geektrust.appservices.StopRideResult;
 import com.example.geektrust.entity.Position;
 

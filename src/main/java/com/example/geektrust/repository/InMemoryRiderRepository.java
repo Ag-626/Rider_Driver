@@ -1,7 +1,6 @@
 package com.example.geektrust.repository;
 
 import com.example.geektrust.entity.Rider;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -19,10 +18,6 @@ public class InMemoryRiderRepository implements RiderRepository{
     return Optional.ofNullable(riders.get(riderId));
   }
 
-  @Override
-  public Collection<Rider> findAll(){
-    return riders.values();
-  }
 
 
 }

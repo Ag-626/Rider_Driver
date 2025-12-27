@@ -2,7 +2,6 @@ package com.example.geektrust.appservices;
 
 import com.example.geektrust.entity.Rider;
 import com.example.geektrust.repository.RiderRepository;
-import java.util.Collection;
 import java.util.Objects;
 
 public class RiderService {
@@ -25,10 +24,6 @@ public class RiderService {
 
   public Rider getRider(String riderId){
     return riderRepository.findById(riderId).orElseThrow(() -> new IllegalArgumentException("Rider not found :"+riderId));
-  }
-
-  public Collection<Rider> getAllRiders(){
-    return riderRepository.findAll();
   }
 
 }

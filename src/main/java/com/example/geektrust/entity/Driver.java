@@ -16,8 +16,8 @@ public class Driver extends Locatable {
     return driverId;
   }
 
-  public boolean isAvailable() {
-    return this.status == DriverStatus.AVAILABLE;
+  public boolean isUnavailable() {
+    return this.status != DriverStatus.AVAILABLE;
   }
 
   public void assignRide(){

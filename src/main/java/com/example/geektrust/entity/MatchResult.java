@@ -17,10 +17,6 @@ public class MatchResult {
         Collections.unmodifiableList(new ArrayList<>(eligibleDriverIds));
   }
 
-  public boolean isEligibleDriver(String driverId){
-    return this.eligibleDriverIds.contains(driverId);
-  }
-
   public String getRiderId(){
     return this.riderId;
   }
