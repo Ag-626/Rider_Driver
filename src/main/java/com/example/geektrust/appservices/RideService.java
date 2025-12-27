@@ -113,22 +113,31 @@ public class RideService {
     if(!(rideInfo.isRideStopped()))
       return BillResponse.notCompleted();
 
-    double distanceRaw = rideInfo.distanceTravelled();
-    int timeTaken = rideInfo.getTimeTaken();
+    BigDecimal distanceKm = BigDecimal
+        .valueOf(rideInfo.distanceTravelled())
+        .setScale(2, RoundingMode.HALF_UP);
 
-    BigDecimal distanceKm = BigDecimal.valueOf(distanceRaw)
-        .setScale(BILL_SCALE, BILL_ROUNDING_MODE);
+    BigDecimal timeMin = BigDecimal.valueOf(rideInfo.getTimeTaken());
 
-    BigDecimal distanceCost = COST_PER_KM.multiply(distanceKm);
-    BigDecimal timeCost = COST_PER_MIN.multiply(BigDecimal.valueOf(timeTaken));
+    // 1) costs
+    BigDecimal distanceCost = COST_PER_KM.multiply(distanceKm).setScale(2, RoundingMode.HALF_UP);
+    BigDecimal timeCost = COST_PER_MIN.multiply(timeMin).setScale(2, RoundingMode.HALF_UP);
 
-    BigDecimal subtotal = BASE_FARE.add(distanceCost).add(timeCost);
-    BigDecimal tax = subtotal.multiply(TAX_RATE);
+    // 2) subtotal rounded to 2 decimals
+    BigDecimal subtotal = BASE_FARE
+        .add(distanceCost)
+        .add(timeCost)
+        .setScale(2, RoundingMode.HALF_UP);
 
-    BigDecimal total = subtotal.add(tax).setScale(BILL_SCALE, BILL_ROUNDING_MODE);
+    // 3) tax rounded to 2 decimals
+    BigDecimal tax = subtotal
+        .multiply(TAX_RATE)
+        .setScale(2, RoundingMode.HALF_UP);
+
+    // 4) total rounded to 2 decimals
+    BigDecimal total = subtotal.add(tax).setScale(2, RoundingMode.HALF_UP);
 
     return BillResponse.billed(rideId, rideInfo.getDriverId(), total.doubleValue());
-
   }
 
 }
