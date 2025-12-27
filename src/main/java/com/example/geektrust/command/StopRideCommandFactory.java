@@ -3,38 +3,33 @@ package com.example.geektrust.command;
 import com.example.geektrust.appservices.RideService;
 import com.example.geektrust.cli.ParsedInput;
 import com.example.geektrust.entity.Position;
+
 import java.util.List;
 import java.util.Objects;
 
-public class StopRideCommandFactory implements CommandFactory{
+public class StopRideCommandFactory implements CommandFactory {
+
+  private static final String CMD = "STOP_RIDE";
+  private static final int REQUIRED_ARG_COUNT = 3;
 
   private final RideService rideService;
 
-  public StopRideCommandFactory(RideService rideService){
-    this.rideService = rideService;
+  public StopRideCommandFactory(RideService rideService) {
+    this.rideService = Objects.requireNonNull(rideService, "rideService is required");
   }
 
-  public Command create(ParsedInput parsedInput){
-    Objects.requireNonNull(parsedInput, "ParsedInput is required");
+  @Override
+  public Command create(ParsedInput parsedInput) {
+    InputUtil.requireInput(parsedInput);
 
-    String rideId = parsedInput.getEntityId();
+    String rideId = InputUtil.requireEntityId(parsedInput, CMD);
+    List<String> args = InputUtil.args(parsedInput);
 
-    List<String> args = parsedInput.getArgs();
+    InputUtil.requireArgCount(args, REQUIRED_ARG_COUNT, CMD, "requires DEST_X DEST_Y TIME_TAKEN_IN_MIN");
 
-    if(rideId == null || rideId.isEmpty()){
-      throw new IllegalArgumentException("STOP_RIDE requires a rideId");
-    }
+    Position destination = InputUtil.requirePositionXY(args, 0, 1, CMD);
+    int timeTaken = InputUtil.requireInt(args, 2, CMD, "TIME_TAKEN_IN_MIN");
 
-    if(args.size()<3){
-      throw new IllegalArgumentException("STOP_RIDE requires a destinationPosition and timeTaken");
-    }
-
-    int X = Integer.parseInt(args.get(0));
-    int Y = Integer.parseInt(args.get(1));
-    int timeTaken = Integer.parseInt(args.get(2));
-
-
-    return new StopRideCommand(rideId, new Position(X, Y), timeTaken, rideService);
+    return new StopRideCommand(rideId, destination, timeTaken, rideService);
   }
-
 }

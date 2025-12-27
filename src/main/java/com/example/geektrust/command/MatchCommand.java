@@ -31,6 +31,6 @@ public class MatchCommand implements Command {
       if (i > 0) sb.append(" ");
       sb.append(ids.get(i));
     }
-    System.out.println("DRIVERS_MATCHED "+sb);
+    System.out.println("DRIVERS_MATCHED " + sb);
   }
 }

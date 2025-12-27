@@ -7,60 +7,62 @@ import com.example.geektrust.entity.Position;
 import com.example.geektrust.entity.RideInfo;
 import com.example.geektrust.entity.Rider;
 import com.example.geektrust.repository.RideRepository;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class RideService {
 
-  private static final BigDecimal BASE_FARE = BigDecimal.valueOf(50.0);
+  // Fare rules
+  private static final BigDecimal BASE_FARE   = BigDecimal.valueOf(50.0);
   private static final BigDecimal COST_PER_KM = BigDecimal.valueOf(6.5);
   private static final BigDecimal COST_PER_MIN = BigDecimal.valueOf(2.0);
-  private static final BigDecimal TAX_RATE = BigDecimal.valueOf(0.20);
+  private static final BigDecimal TAX_RATE    = BigDecimal.valueOf(0.20);
 
+  // Rounding rules
   private static final int BILL_SCALE = 2;
   private static final RoundingMode BILL_ROUNDING_MODE = RoundingMode.HALF_UP;
+
+  // Match constraints
+  private static final int MAX_MATCHED_DRIVERS = 5;
 
   private final RideRepository rideRepository;
   private final MatchService matchService;
   private final RiderService riderService;
   private final DriverService driverService;
 
-  public RideService(RideRepository rideRepository, MatchService matchService, RiderService riderService, DriverService driverService){
-    this.rideRepository = rideRepository;
-    this.matchService = matchService;
-    this.riderService = riderService;
-    this.driverService = driverService;
+  public RideService(RideRepository rideRepository,
+      MatchService matchService,
+      RiderService riderService,
+      DriverService driverService) {
+    this.rideRepository = Objects.requireNonNull(rideRepository, "rideRepository cannot be null");
+    this.matchService = Objects.requireNonNull(matchService, "matchService cannot be null");
+    this.riderService = Objects.requireNonNull(riderService, "riderService cannot be null");
+    this.driverService = Objects.requireNonNull(driverService, "driverService cannot be null");
   }
 
-  public StartRideResult startRide(String rideId, int n, String riderId) {
+  // ---------------- START RIDE ----------------
 
-    if (rideId == null || rideId.trim().isEmpty()) return StartRideResult.INVALID_RIDE;
-    if (riderId == null || riderId.trim().isEmpty()) return StartRideResult.INVALID_RIDE;
-    if (n < 1 || n > 5) return StartRideResult.INVALID_RIDE;
+  public StartRideResult startRide(String rideId, int n, String riderId) {
+    if (!isValidStartInput(rideId, n, riderId)) return StartRideResult.INVALID_RIDE;
     if (rideRepository.isRideIdExist(rideId)) return StartRideResult.INVALID_RIDE;
 
     Optional<MatchResult> opt = matchService.findMatchResultByRiderId(riderId);
     if (!opt.isPresent()) return StartRideResult.INVALID_RIDE;
 
     MatchResult matchResult = opt.get();
-    List<String> ids = matchResult.getEligibleDriverIds();
-    if (ids.size() < n) return StartRideResult.INVALID_RIDE;
-
-    String driverId = ids.get(n - 1);
+    String driverId = pickNthDriver(matchResult.getEligibleDriverIds(), n);
+    if (driverId == null) return StartRideResult.INVALID_RIDE;
 
     Driver driver = driverService.getDriver(driverId);
     if (driver.isUnavailable()) return StartRideResult.INVALID_RIDE;
 
     Rider rider = riderService.getRider(riderId);
 
-    try {
-      rider.startRide(rideId);
-      driver.assignRide();
-    } catch (RuntimeException ex) {
-      return StartRideResult.INVALID_RIDE;
-    }
+    if (!tryStartEntities(rider, driver, rideId)) return StartRideResult.INVALID_RIDE;
 
     rideRepository.save(new RideInfo(rideId, driverId, riderId, rider.getPosition()));
     matchService.clearMatch(riderId);
@@ -68,76 +70,96 @@ public class RideService {
     return StartRideResult.RIDE_STARTED;
   }
 
-  public StopRideResult stopRide(String rideId, Position destinationPosition, int timeTaken){
-    if(rideId == null || rideId.trim().isEmpty()) return StopRideResult.INVALID_RIDE;
-
-    if(destinationPosition == null) return StopRideResult.INVALID_RIDE;
-
-    if(!(rideRepository.isRideIdExist(rideId))) return StopRideResult.INVALID_RIDE;
-
-    Optional<RideInfo> ride = rideRepository.getByRideId(rideId);
-
-    if(!(ride.isPresent()))
-      return StopRideResult.INVALID_RIDE;
-    RideInfo rideInfo = ride.get();
-    if(rideInfo.isRideStopped())
-      return StopRideResult.INVALID_RIDE;
-
-    String riderId = rideInfo.getRiderId();
-    Rider rider = riderService.getRider(riderId);
-
-    String driverId = rideInfo.getDriverId();
-    Driver driver = driverService.getDriver(driverId);
-
-    try{
-      rider.completeRide(rideId, destinationPosition);
-      driver.completeRide(destinationPosition);
-      rideInfo.stop(destinationPosition, timeTaken);
-    }catch (Exception e){
-      return StopRideResult.INVALID_RIDE;
-    }
-
-    return StopRideResult.RIDE_STOPPED;
+  private boolean isValidStartInput(String rideId, int n, String riderId) {
+    return rideId != null && !rideId.trim().isEmpty()
+        && riderId != null && !riderId.trim().isEmpty()
+        && n >= 1 && n <= MAX_MATCHED_DRIVERS;
   }
 
-  public BillResponse billed(String rideId){
-    if(rideId == null || rideId.trim().isEmpty())
-      return BillResponse.invalid();
+  private String pickNthDriver(List<String> eligibleDriverIds, int n) {
+    if (eligibleDriverIds == null) return null;
+    if (eligibleDriverIds.size() < n) return null;
+    return eligibleDriverIds.get(n - 1);
+  }
 
-    Optional<RideInfo> ride = rideRepository.getByRideId(rideId);
-    if(!ride.isPresent())
-      return BillResponse.invalid();
+  private boolean tryStartEntities(Rider rider, Driver driver, String rideId) {
+    try {
+      rider.startRide(rideId);
+      driver.assignRide();
+      return true;
+    } catch (RuntimeException ex) {
+      return false;
+    }
+  }
 
-    RideInfo rideInfo = ride.get();
+  // ---------------- STOP RIDE ----------------
 
-    if(!(rideInfo.isRideStopped()))
-      return BillResponse.notCompleted();
+  public StopRideResult stopRide(String rideId, Position destinationPosition, int timeTaken) {
+    if (!isValidStopInput(rideId, destinationPosition, timeTaken)) return StopRideResult.INVALID_RIDE;
 
-    BigDecimal distanceKm = BigDecimal
-        .valueOf(rideInfo.distanceTravelled())
-        .setScale(2, RoundingMode.HALF_UP);
+    Optional<RideInfo> opt = rideRepository.getByRideId(rideId);
+    if (!opt.isPresent()) return StopRideResult.INVALID_RIDE;
 
-    BigDecimal timeMin = BigDecimal.valueOf(rideInfo.getTimeTaken());
+    RideInfo rideInfo = opt.get();
+    if (rideInfo.isRideStopped()) return StopRideResult.INVALID_RIDE;
 
-    // 1) costs
-    BigDecimal distanceCost = COST_PER_KM.multiply(distanceKm).setScale(2, RoundingMode.HALF_UP);
-    BigDecimal timeCost = COST_PER_MIN.multiply(timeMin).setScale(2, RoundingMode.HALF_UP);
+    return performStop(rideInfo, destinationPosition, timeTaken);
+  }
 
-    // 2) subtotal rounded to 2 decimals
-    BigDecimal subtotal = BASE_FARE
-        .add(distanceCost)
-        .add(timeCost)
-        .setScale(2, RoundingMode.HALF_UP);
+  private boolean isValidStopInput(String rideId, Position destinationPosition, int timeTaken) {
+    return rideId != null && !rideId.trim().isEmpty()
+        && destinationPosition != null
+        && timeTaken >= 0;
+  }
 
-    // 3) tax rounded to 2 decimals
-    BigDecimal tax = subtotal
-        .multiply(TAX_RATE)
-        .setScale(2, RoundingMode.HALF_UP);
+  private StopRideResult performStop(RideInfo rideInfo, Position destinationPosition, int timeTaken) {
+    try {
+      Rider rider = riderService.getRider(rideInfo.getRiderId());
+      Driver driver = driverService.getDriver(rideInfo.getDriverId());
 
-    // 4) total rounded to 2 decimals
-    BigDecimal total = subtotal.add(tax).setScale(2, RoundingMode.HALF_UP);
+      // state transitions first (throws if invalid)
+      rider.completeRide(rideInfo.getRideId(), destinationPosition);
+      driver.completeRide(destinationPosition);
 
+      // persist ride completion details
+      rideInfo.stop(destinationPosition, timeTaken);
+
+      return StopRideResult.RIDE_STOPPED;
+    } catch (RuntimeException ex) {
+      return StopRideResult.INVALID_RIDE;
+    }
+  }
+
+  // ---------------- BILL ----------------
+
+  public BillResponse billed(String rideId) {
+    if (rideId == null || rideId.trim().isEmpty()) return BillResponse.invalid();
+
+    Optional<RideInfo> opt = rideRepository.getByRideId(rideId);
+    if (!opt.isPresent()) return BillResponse.invalid();
+
+    RideInfo rideInfo = opt.get();
+    if (!rideInfo.isRideStopped()) return BillResponse.notCompleted();
+
+    BigDecimal total = calculateTotalFare(rideInfo);
     return BillResponse.billed(rideId, rideInfo.getDriverId(), total.doubleValue());
   }
 
+  private BigDecimal calculateTotalFare(RideInfo rideInfo) {
+    // Rule: all floating point values rounded to 2 decimals
+    BigDecimal distanceKm = round2(BigDecimal.valueOf(rideInfo.distanceTravelled()));
+    BigDecimal timeMin = BigDecimal.valueOf(rideInfo.getTimeTaken());
+
+    BigDecimal distanceCost = round2(COST_PER_KM.multiply(distanceKm));
+    BigDecimal timeCost = round2(COST_PER_MIN.multiply(timeMin));
+
+    BigDecimal subtotal = round2(BASE_FARE.add(distanceCost).add(timeCost));
+    BigDecimal tax = round2(subtotal.multiply(TAX_RATE));
+
+    return round2(subtotal.add(tax));
+  }
+
+  private BigDecimal round2(BigDecimal value) {
+    return value.setScale(BILL_SCALE, BILL_ROUNDING_MODE);
+  }
 }

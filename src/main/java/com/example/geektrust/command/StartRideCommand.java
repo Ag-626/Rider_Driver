@@ -20,12 +20,11 @@ public class StartRideCommand implements Command{
   @Override
   public void execute() {
     StartRideResult result = rideService.startRide(rideId, N, riderId);
-
     if (result == StartRideResult.INVALID_RIDE) {
       System.out.println("INVALID_RIDE");
-    } else {
-      System.out.println("RIDE_STARTED " + rideId);
+      return;
     }
+    System.out.println("RIDE_STARTED " + rideId);
   }
 
 }

@@ -4,33 +4,33 @@ import com.example.geektrust.appservices.DriverService;
 import com.example.geektrust.cli.ParsedInput;
 import com.example.geektrust.entity.Driver;
 import com.example.geektrust.entity.Position;
+
 import java.util.List;
 import java.util.Objects;
 
-public class AddDriverCommandFactory implements CommandFactory{
+public class AddDriverCommandFactory implements CommandFactory {
 
+  private static final String CMD = "ADD_DRIVER";
   private static final int REQUIRED_ARG_COUNT = 2;
+
   private final DriverService driverService;
 
-  public AddDriverCommandFactory(DriverService driverService){
-    this.driverService = driverService;
+  public AddDriverCommandFactory(DriverService driverService) {
+    this.driverService = Objects.requireNonNull(driverService, "driverService is required");
   }
 
   @Override
-  public Command create(ParsedInput parsedInput){
-    Objects.requireNonNull(parsedInput, "Parsed Input is required");
-    String driverId = parsedInput.getEntityId();
-    List <String> args = parsedInput.getArgs();
+  public Command create(ParsedInput parsedInput) {
+    InputUtil.requireInput(parsedInput);
 
-    if(driverId == null || driverId.isEmpty()){
-      throw new IllegalArgumentException("ADD_Driver requires a driverId");
-    }
-    if(parsedInput.getArgs().size()<REQUIRED_ARG_COUNT){
-      throw new IllegalArgumentException("ADD_Driver requires a x and y coordinates");
-    }
+    String driverId = InputUtil.requireEntityId(parsedInput, CMD);
+    List<String> args = InputUtil.args(parsedInput);
 
-    Driver driver = new Driver(driverId, new Position(Integer.parseInt(args.get(0)), Integer.parseInt(args.get(1))));
+    InputUtil.requireArgCount(args, REQUIRED_ARG_COUNT, CMD, "requires X and Y coordinates");
+
+    Position pos = InputUtil.requirePositionXY(args, 0, 1, CMD);
+    Driver driver = new Driver(driverId, pos);
+
     return new AddDriverCommand(driver, driverService);
   }
-
 }

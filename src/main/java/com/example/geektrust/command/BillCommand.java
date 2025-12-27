@@ -4,14 +4,16 @@ import com.example.geektrust.appservices.BillResult;
 import com.example.geektrust.appservices.RideService;
 import com.example.geektrust.entity.BillResponse;
 
-public class BillCommand implements Command{
+import java.util.Objects;
+
+public class BillCommand implements Command {
 
   private final String rideId;
   private final RideService rideService;
 
-  public BillCommand(String rideId, RideService rideService){
-    this.rideId = rideId;
-    this.rideService = rideService;
+  public BillCommand(String rideId, RideService rideService) {
+    this.rideId = Objects.requireNonNull(rideId, "rideId is required");
+    this.rideService = Objects.requireNonNull(rideService, "rideService is required");
   }
 
   @Override
@@ -33,5 +35,4 @@ public class BillCommand implements Command{
             String.format("%.2f", res.getAmount())
     );
   }
-
 }

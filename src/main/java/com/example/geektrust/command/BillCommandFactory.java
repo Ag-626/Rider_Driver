@@ -2,25 +2,24 @@ package com.example.geektrust.command;
 
 import com.example.geektrust.appservices.RideService;
 import com.example.geektrust.cli.ParsedInput;
+
 import java.util.Objects;
 
-public class BillCommandFactory implements CommandFactory{
+public class BillCommandFactory implements CommandFactory {
 
+  private static final String CMD = "BILL";
   private final RideService rideService;
 
-  public BillCommandFactory(RideService rideService){
-    this.rideService = rideService;
+  public BillCommandFactory(RideService rideService) {
+    this.rideService = Objects.requireNonNull(rideService, "rideService is required");
   }
 
   @Override
-  public Command create(ParsedInput parsedInput){
-    Objects.requireNonNull(parsedInput, "The parsed input cannot be null");
+  public Command create(ParsedInput parsedInput) {
+    InputUtil.requireInput(parsedInput);
 
-    String rideId = parsedInput.getEntityId();
-    if(rideId == null || rideId.trim().isEmpty())
-      throw new IllegalArgumentException("BILL requires a rideId");
+    String rideId = InputUtil.requireEntityId(parsedInput, CMD);
 
     return new BillCommand(rideId, rideService);
   }
-
 }
