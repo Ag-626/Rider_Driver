@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class MatchService {
 
   private static final double DEFAULT_MAX_DISTANCE = 5.0;
+  private static final int MAX_MATCHED_DRIVERS = 5;
 
   private final DriverService driverService;
   private final RiderService riderService;
@@ -38,9 +40,10 @@ public class MatchService {
     Position riderPos = rider.getPosition();
     List<Driver> eligibleDrivers = findEligibleDrivers(riderPos, DEFAULT_MAX_DISTANCE);
 
+
     List<String> eligibleDriverIds = new ArrayList<>();
-    for (Driver d : eligibleDrivers) {
-      eligibleDriverIds.add(d.getDriverId());
+    for (int i = 0; i < eligibleDrivers.size() && i < MAX_MATCHED_DRIVERS; i++) {
+      eligibleDriverIds.add(eligibleDrivers.get(i).getDriverId());
     }
 
     MatchResult result = new MatchResult(riderId, eligibleDriverIds);
@@ -49,6 +52,16 @@ public class MatchService {
     matchRepository.save(result);
 
     return result;
+  }
+
+  public Optional<MatchResult> findMatchResultByRiderId(String riderId) {
+    Objects.requireNonNull(riderId, "riderId cannot be null");
+    return matchRepository.findByRiderId(riderId);
+  }
+
+  public void clearMatch(String riderId){
+    Objects.requireNonNull(riderId, "riderId cannot be null");
+    matchRepository.clear(riderId);
   }
 
   private List<Driver> findEligibleDrivers(Position riderPosition, double maxDistance) {
@@ -68,4 +81,6 @@ public class MatchService {
 
     return eligibleDrivers;
   }
+
+
 }

@@ -17,7 +17,7 @@ public class InMemoryMatchRepository implements MatchRepository{
   }
 
   @Override
-  public Optional<MatchResult> getByRiderId(String riderId){
+  public Optional<MatchResult> findByRiderId(String riderId){
     Objects.requireNonNull(riderId, "riderId must not be null");
     return Optional.ofNullable(matches.get(riderId));
   }

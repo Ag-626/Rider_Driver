@@ -10,7 +10,8 @@ public final class CommandModule {
     return new CommandRegistry()
         .register("ADD_DRIVER", new AddDriverCommandFactory(services.driverService()))
         .register("ADD_RIDER", new AddRiderCommandFactory(services.riderService()))
-        .register("MATCH", new MatchCommandFactory(services.matchService()));
+        .register("MATCH", new MatchCommandFactory(services.matchService()))
+        .register("START_RIDE", new StartRideCommandFactory(services.rideService()));
   }
 
 

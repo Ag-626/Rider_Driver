@@ -3,8 +3,10 @@ package com.example.geektrust.appservices;
 import com.example.geektrust.repository.DriverRepository;
 import com.example.geektrust.repository.InMemoryDriverRepository;
 import com.example.geektrust.repository.InMemoryMatchRepository;
+import com.example.geektrust.repository.InMemoryRideRepository;
 import com.example.geektrust.repository.InMemoryRiderRepository;
 import com.example.geektrust.repository.MatchRepository;
+import com.example.geektrust.repository.RideRepository;
 import com.example.geektrust.repository.RiderRepository;
 
 public final class Services {
@@ -28,7 +30,8 @@ public final class Services {
     RiderService riderService = new RiderService(riderRepository);
     MatchRepository matchRepository = new InMemoryMatchRepository();
     MatchService matchService = new MatchService(driverService, riderService, matchRepository);
-    RideService rideService = new RideService();
+    RideRepository rideRepository = new InMemoryRideRepository();
+    RideService rideService = new RideService(rideRepository, matchService, riderService, driverService);
     return new Services(driverService, riderService, matchService, rideService);
   }
 
@@ -42,6 +45,10 @@ public final class Services {
 
   public MatchService matchService(){
     return matchService;
+  }
+
+  public RideService rideService(){
+    return rideService;
   }
 
 }
