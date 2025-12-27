@@ -48,4 +48,10 @@ public class RideInfo {
     this.rideStatus = RideStatus.STOPPED;
   }
 
+  public int getTimeTaken() {
+    return timeTaken;
+  }
+  public double distanceTravelled(){
+    return (sourcePosition.distanceTo(destinationPosition));
+  }
 }

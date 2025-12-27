@@ -1,15 +1,26 @@
 package com.example.geektrust.appservices;
 
+import com.example.geektrust.entity.BillResponse;
 import com.example.geektrust.entity.Driver;
 import com.example.geektrust.entity.MatchResult;
 import com.example.geektrust.entity.Position;
 import com.example.geektrust.entity.RideInfo;
 import com.example.geektrust.entity.Rider;
 import com.example.geektrust.repository.RideRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
 public class RideService {
+
+  private static final BigDecimal BASE_FARE = BigDecimal.valueOf(50.0);
+  private static final BigDecimal COST_PER_KM = BigDecimal.valueOf(6.5);
+  private static final BigDecimal COST_PER_MIN = BigDecimal.valueOf(2.0);
+  private static final BigDecimal TAX_RATE = BigDecimal.valueOf(0.20);
+
+  private static final int BILL_SCALE = 2;
+  private static final RoundingMode BILL_ROUNDING_MODE = RoundingMode.HALF_UP;
 
   private final RideRepository rideRepository;
   private final MatchService matchService;
@@ -87,6 +98,37 @@ public class RideService {
     }
 
     return StopRideResult.RIDE_STOPPED;
+  }
+
+  public BillResponse billed(String rideId){
+    if(rideId == null || rideId.trim().isEmpty())
+      return BillResponse.invalid();
+
+    Optional<RideInfo> ride = rideRepository.getByRideId(rideId);
+    if(!ride.isPresent())
+      return BillResponse.invalid();
+
+    RideInfo rideInfo = ride.get();
+
+    if(!(rideInfo.isRideStopped()))
+      return BillResponse.notCompleted();
+
+    double distanceRaw = rideInfo.distanceTravelled();
+    int timeTaken = rideInfo.getTimeTaken();
+
+    BigDecimal distanceKm = BigDecimal.valueOf(distanceRaw)
+        .setScale(BILL_SCALE, BILL_ROUNDING_MODE);
+
+    BigDecimal distanceCost = COST_PER_KM.multiply(distanceKm);
+    BigDecimal timeCost = COST_PER_MIN.multiply(BigDecimal.valueOf(timeTaken));
+
+    BigDecimal subtotal = BASE_FARE.add(distanceCost).add(timeCost);
+    BigDecimal tax = subtotal.multiply(TAX_RATE);
+
+    BigDecimal total = subtotal.add(tax).setScale(BILL_SCALE, BILL_ROUNDING_MODE);
+
+    return BillResponse.billed(rideId, rideInfo.getDriverId(), total.doubleValue());
+
   }
 
 }
