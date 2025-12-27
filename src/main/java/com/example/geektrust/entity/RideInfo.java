@@ -24,4 +24,28 @@ public class RideInfo {
     return this.rideId;
   }
 
+  public boolean isRideStopped(){
+    return this.rideStatus == RideStatus.STOPPED;
+  }
+
+  public String getRiderId(){
+    return this.riderId;
+  }
+
+  public String getDriverId(){
+    return this.driverId;
+  }
+
+  public void stop(Position destinationPosition, int timeTakenInMin) {
+    if (rideStatus == RideStatus.STOPPED) {
+      throw new IllegalStateException("Ride already stopped: " + rideId);
+    }
+    this.destinationPosition = Objects.requireNonNull(destinationPosition, "destinationPosition cannot be null");
+    if (timeTakenInMin < 0) {
+      throw new IllegalArgumentException("timeTakenInMin cannot be negative");
+    }
+    this.timeTaken = timeTakenInMin;
+    this.rideStatus = RideStatus.STOPPED;
+  }
+
 }

@@ -53,7 +53,7 @@ public class Rider extends Locatable {
     if(status != RiderStatus.ON_RIDE)
       throw new IllegalStateException("Rider must be on ride to complete the ride");
 
-    if(this.activeRideId != rideId)
+    if(!(this.activeRideId.equalsIgnoreCase(rideId)))
       throw new IllegalStateException("Ride Id mismatch. Active ride: " + activeRideId);
 
     moveTo(dropPosition);

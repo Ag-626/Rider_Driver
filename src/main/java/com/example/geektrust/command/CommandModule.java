@@ -11,7 +11,8 @@ public final class CommandModule {
         .register("ADD_DRIVER", new AddDriverCommandFactory(services.driverService()))
         .register("ADD_RIDER", new AddRiderCommandFactory(services.riderService()))
         .register("MATCH", new MatchCommandFactory(services.matchService()))
-        .register("START_RIDE", new StartRideCommandFactory(services.rideService()));
+        .register("START_RIDE", new StartRideCommandFactory(services.rideService()))
+        .register("STOP_RIDE", new StopRideCommandFactory(services.rideService()));
   }
 
 

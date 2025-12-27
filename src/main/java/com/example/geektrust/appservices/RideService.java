@@ -2,6 +2,7 @@ package com.example.geektrust.appservices;
 
 import com.example.geektrust.entity.Driver;
 import com.example.geektrust.entity.MatchResult;
+import com.example.geektrust.entity.Position;
 import com.example.geektrust.entity.RideInfo;
 import com.example.geektrust.entity.Rider;
 import com.example.geektrust.repository.RideRepository;
@@ -56,5 +57,36 @@ public class RideService {
     return StartRideResult.RIDE_STARTED;
   }
 
+  public StopRideResult stopRide(String rideId, Position destinationPosition, int timeTaken){
+    if(rideId == null || rideId.trim().isEmpty()) return StopRideResult.INVALID_RIDE;
+
+    if(destinationPosition == null) return StopRideResult.INVALID_RIDE;
+
+    if(!(rideRepository.isRideIdExist(rideId))) return StopRideResult.INVALID_RIDE;
+
+    Optional<RideInfo> ride = rideRepository.getByRideId(rideId);
+
+    if(!(ride.isPresent()))
+      return StopRideResult.INVALID_RIDE;
+    RideInfo rideInfo = ride.get();
+    if(rideInfo.isRideStopped())
+      return StopRideResult.INVALID_RIDE;
+
+    String riderId = rideInfo.getRiderId();
+    Rider rider = riderService.getRider(riderId);
+
+    String driverId = rideInfo.getDriverId();
+    Driver driver = driverService.getDriver(driverId);
+
+    try{
+      rider.completeRide(rideId, destinationPosition);
+      driver.completeRide(destinationPosition);
+      rideInfo.stop(destinationPosition, timeTaken);
+    }catch (Exception e){
+      return StopRideResult.INVALID_RIDE;
+    }
+
+    return StopRideResult.RIDE_STOPPED;
+  }
 
 }
